@@ -1,0 +1,15 @@
+[package]
+name = "copycat_code_web"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+actix-web = "4.9.0"
+surrealdb = "2.0.4"
+anyhow = "1.0.93"
+serde = {version = "1.0.214", features = ["derive"]}
+whirlpool = "0.10.4"
+base64ct = "1.6.0"
+lazy_static = "1.5.0"
+actix-session = {version = "0.10.1", features = ["cookie-session"]}
+env_logger = "0.11.5"
