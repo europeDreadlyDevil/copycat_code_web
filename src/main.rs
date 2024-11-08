@@ -1,7 +1,8 @@
 mod auth;
 mod db_connector;
 pub mod user;
-mod course;
+pub mod course;
+pub mod lecture;
 
 use crate::auth::controller::{login_handler, logout_handler, register_handler};
 use crate::db_connector::init_db_connection;
@@ -15,6 +16,7 @@ use actix_web::{get, App, HttpServer};
 use anyhow::Result;
 use surrealdb::engine::remote::ws::Client;
 use surrealdb::Surreal;
+use crate::course::controller::post_course_handler;
 
 pub type DataBase = Data<Surreal<Client>>;
 
@@ -38,6 +40,7 @@ async fn main() -> Result<()> {
             .service(register_handler)
             .service(login_handler)
             .service(logout_handler)
+            .service(post_course_handler)
     })
     .bind(("127.0.0.1", 8080))?
     .run()

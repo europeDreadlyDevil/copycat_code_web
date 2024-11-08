@@ -24,7 +24,7 @@ impl AuthController {
             email,
         } = auth_request
         {
-            if let None = UserService::get_user(&login, db.clone()).await? {
+            return if let None = UserService::get_user(&login, db.clone()).await? {
                 let mut hasher = Whirlpool::default();
                 hasher.write(password.as_bytes())?;
                 let hashed_pass = Base64::encode_string(&hasher.finalize());
@@ -34,16 +34,19 @@ impl AuthController {
                         password: hashed_pass,
                         email: email.clone(),
                     },
-                    db,
+                    db.clone(),
                 )
-                .await?;
-                let _ = session.insert("login", login);
-                let _ = session.insert("email", email);
+                    .await?;
+                let user = UserService::get_user(&login, db.clone()).await?.unwrap();
+                let _ = session.insert("login", user.login);
+                let _ = session.insert("email", user.email);
+                let _ = session.insert("id", user.id.unwrap().to_string());
+                Ok(())
             } else {
-                return Err(AuthError::LoginAlreadyExists.into());
+                Err(AuthError::LoginAlreadyExists.into())
             }
         }
-        Ok(AuthError::BadRequest.into())
+        Err(AuthError::BadRequest.into())
     }
     async fn login(
         session: Session,
@@ -51,17 +54,19 @@ impl AuthController {
         db: DataBase,
     ) -> anyhow::Result<()> {
         if let AuthRequest::Login { login, password } = auth_request {
-            match UserService::get_user(&login, db.clone()).await? {
-                None => return Err(Error::msg(AuthError::LoginIsInvalid)),
+            return match UserService::get_user(&login, db.clone()).await? {
+                None => Err(AuthError::LoginIsInvalid.into()),
                 Some(user) => {
                     let mut hasher = Whirlpool::default();
                     hasher.write(password.as_bytes())?;
                     let hashed_pass = Base64::encode_string(&hasher.finalize());
                     if user.password == hashed_pass {
-                        let _ = session.insert("login", login);
+                        let _ = session.insert("login", user.login);
                         let _ = session.insert("email", user.email);
+                        let _ = session.insert("id", user.id.unwrap().to_string());
+                        Ok(())
                     } else {
-                        return Err(AuthError::PasswordIsInvalid.into());
+                        Err(AuthError::PasswordIsInvalid.into())
                     }
                 }
             }
@@ -94,7 +99,15 @@ pub async fn login_handler(
 ) -> HttpResponse {
     match AuthController::login(session, auth_request.0, db).await {
         Ok(_) => HttpResponse::Accepted().body("Login success"),
-        Err(e) => HttpResponse::BadRequest().body(e.to_string()),
+        Err(e) => match e.downcast::<AuthError>() {
+            Ok(ae) => match ae {
+                AuthError::LoginIsInvalid => HttpResponse::BadRequest().body(AuthError::LoginIsInvalid.to_string()),
+                AuthError::PasswordIsInvalid => HttpResponse::BadRequest().body(AuthError::PasswordIsInvalid.to_string()),
+                AuthError::BadRequest => HttpResponse::BadRequest().body(AuthError::BadRequest.to_string()),
+                _ => HttpResponse::InternalServerError().body(ae.to_string())
+            }
+            Err(e) => HttpResponse::InternalServerError().body(e.to_string())
+        },
     }
 }
 
