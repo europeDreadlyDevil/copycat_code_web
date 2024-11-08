@@ -1,6 +1,6 @@
+use crate::module::model::ModuleModel;
 use serde::{Deserialize, Serialize};
 use surrealdb::sql::Thing;
-use crate::lecture::model::LectureModel;
 
 #[derive(Serialize, Deserialize)]
 pub struct CourseModel {
@@ -11,13 +11,27 @@ pub struct CourseModel {
     pub title: String,
     pub description: String,
     pub rating: f32,
-    pub lectures: Vec<LectureModel>
+    pub modules: Vec<ModuleModel>,
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct CourseModelDto {
+pub struct CourseModelCreateDto {
     pub owner_id: String,
     pub image_id: Option<String>,
     pub title: String,
     pub description: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct CourseModuleUpdateDto {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub owner_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub image_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub title: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rating: Option<f32>,
 }

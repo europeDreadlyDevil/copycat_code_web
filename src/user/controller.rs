@@ -46,7 +46,7 @@ impl UserController {
     }
 }
 
-#[post("user/create-user")]
+#[post("/create-user")]
 pub async fn post_user_handler(
     user_service_response: Json<UserServiceResponse>,
     db: DataBase,
@@ -62,7 +62,7 @@ pub async fn post_user_handler(
     }
 }
 
-#[get("user/get-user")]
+#[get("/get-user")]
 pub async fn get_user_handler(session: Session, db: DataBase) -> HttpResponse {
     match UserController::get_user(session, db).await {
         Ok(user) => HttpResponse::Accepted().json(user),

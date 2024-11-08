@@ -5,7 +5,6 @@ use crate::DataBase;
 use actix_session::Session;
 use actix_web::web::Json;
 use actix_web::{delete, get, post, HttpResponse};
-use anyhow::Error;
 use base64ct::{Base64, Encoding};
 use std::io::Write;
 use whirlpool::{Digest, Whirlpool};
@@ -36,7 +35,7 @@ impl AuthController {
                     },
                     db.clone(),
                 )
-                    .await?;
+                .await?;
                 let user = UserService::get_user(&login, db.clone()).await?.unwrap();
                 let _ = session.insert("login", user.login);
                 let _ = session.insert("email", user.email);
@@ -44,7 +43,7 @@ impl AuthController {
                 Ok(())
             } else {
                 Err(AuthError::LoginAlreadyExists.into())
-            }
+            };
         }
         Err(AuthError::BadRequest.into())
     }
@@ -69,7 +68,7 @@ impl AuthController {
                         Err(AuthError::PasswordIsInvalid.into())
                     }
                 }
-            }
+            };
         }
         Err(AuthError::BadRequest.into())
     }
@@ -79,7 +78,7 @@ impl AuthController {
     }
 }
 
-#[post("auth/registration")]
+#[post("/registration")]
 pub async fn register_handler(
     session: Session,
     auth_request: Json<AuthRequest>,
@@ -91,7 +90,7 @@ pub async fn register_handler(
     }
 }
 
-#[get("auth/login")]
+#[get("/login")]
 pub async fn login_handler(
     session: Session,
     auth_request: Json<AuthRequest>,
@@ -101,17 +100,23 @@ pub async fn login_handler(
         Ok(_) => HttpResponse::Accepted().body("Login success"),
         Err(e) => match e.downcast::<AuthError>() {
             Ok(ae) => match ae {
-                AuthError::LoginIsInvalid => HttpResponse::BadRequest().body(AuthError::LoginIsInvalid.to_string()),
-                AuthError::PasswordIsInvalid => HttpResponse::BadRequest().body(AuthError::PasswordIsInvalid.to_string()),
-                AuthError::BadRequest => HttpResponse::BadRequest().body(AuthError::BadRequest.to_string()),
-                _ => HttpResponse::InternalServerError().body(ae.to_string())
-            }
-            Err(e) => HttpResponse::InternalServerError().body(e.to_string())
+                AuthError::LoginIsInvalid => {
+                    HttpResponse::BadRequest().body(AuthError::LoginIsInvalid.to_string())
+                }
+                AuthError::PasswordIsInvalid => {
+                    HttpResponse::BadRequest().body(AuthError::PasswordIsInvalid.to_string())
+                }
+                AuthError::BadRequest => {
+                    HttpResponse::BadRequest().body(AuthError::BadRequest.to_string())
+                }
+                _ => HttpResponse::InternalServerError().body(ae.to_string()),
+            },
+            Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
         },
     }
 }
 
-#[delete("auth/logout")]
+#[delete("/logout")]
 pub async fn logout_handler(session: Session) -> HttpResponse {
     match AuthController::logout(session).await {
         Ok(_) => HttpResponse::Accepted().body("Logout success"),
