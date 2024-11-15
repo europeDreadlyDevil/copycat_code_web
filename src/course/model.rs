@@ -22,8 +22,8 @@ pub struct CourseModelCreateDto {
     pub description: String,
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct CourseModuleUpdateDto {
+#[derive(Serialize, Deserialize, Default)]
+pub struct CourseModelUpdateDto {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub owner_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -34,4 +34,6 @@ pub struct CourseModuleUpdateDto {
     pub description: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rating: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub modules: Option<Vec<ModuleModel>>,
 }

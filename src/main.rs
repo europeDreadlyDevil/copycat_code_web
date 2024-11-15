@@ -8,15 +8,15 @@ mod rating;
 pub mod user;
 
 use crate::auth::controller::{login_handler, logout_handler, register_handler};
-use crate::course::controller::{get_course_by_id_handler, post_course_handler, put_course_handler};
+use crate::course::controller::{delete_course, get_course_by_id_handler, get_course_list_handler, post_course_handler, put_course_handler};
 use crate::db_connector::init_db_connection;
-use crate::module::controller::post_module_handler;
+use crate::module::controller::{get_module_by_id_handler, post_module_handler, put_module_handler};
 use crate::user::controller::{get_user_handler, post_user_handler};
 use actix_session::storage::CookieSessionStore;
 use actix_session::SessionMiddleware;
 use actix_web::cookie::Key;
 use actix_web::middleware::Logger;
-use actix_web::web::{scope, Data};
+use actix_web::web::{delete, scope, Data};
 use actix_web::{get, App, HttpServer};
 use anyhow::Result;
 use surrealdb::engine::remote::ws::Client;
@@ -55,8 +55,15 @@ async fn main() -> Result<()> {
                     .service(post_course_handler)
                     .service(get_course_by_id_handler)
                     .service(put_course_handler)
+                    .service(get_course_list_handler)
+                    .service(delete_course),
             )
-            .service(scope("module").service(post_module_handler))
+            .service(
+                scope("module")
+                    .service(post_module_handler)
+                    .service(get_module_by_id_handler)
+                    .service(put_module_handler),
+            )
     })
     .bind(("127.0.0.1", 8080))?
     .run()

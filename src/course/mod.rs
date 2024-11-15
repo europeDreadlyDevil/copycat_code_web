@@ -1,4 +1,4 @@
-use crate::course::model::CourseModuleUpdateDto;
+use crate::course::model::CourseModelUpdateDto;
 use serde::{Deserialize, Serialize};
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
@@ -19,7 +19,10 @@ pub enum CourseServiceRequest {
     },
     UpdateCourse {
         id: String,
-        dto: CourseModuleUpdateDto,
+        dto: CourseModelUpdateDto,
+    },
+    DeleteCourse {
+        id: String,
     },
 }
 

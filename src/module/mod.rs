@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::error::Error;
 use std::fmt::{Display, Formatter};
+use crate::module::model::ModuleModelUpdateDto;
 
 pub mod controller;
 pub mod model;
@@ -8,7 +9,19 @@ pub mod service;
 
 #[derive(Serialize, Deserialize)]
 pub enum ModuleServiceRequest {
-    CreateModule { course_id: String, title: String },
+    CreateModule {
+        course_id: String,
+        title: String,
+        description: String,
+    },
+    GetModule {
+        id: String,
+    },
+    UpdateModule {
+        id: String,
+        dto: ModuleModelUpdateDto
+    },
+    DeleteModule { id: String },
 }
 
 #[derive(Debug)]
@@ -16,6 +29,7 @@ pub enum ModuleServiceError {
     BadRequest,
     IsNotCourseOwner,
     UnauthorizedRequest,
+    ModuleNotFound,
 }
 
 impl Display for ModuleServiceError {
@@ -29,6 +43,7 @@ impl Display for ModuleServiceError {
             ModuleServiceError::UnauthorizedRequest => {
                 write!(f, "Trying create module in unauthorized")
             }
+            ModuleServiceError::ModuleNotFound => write!(f, "Module not found"),
         }
     }
 }

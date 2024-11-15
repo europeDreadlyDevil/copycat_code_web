@@ -1,3 +1,4 @@
+use crate::practice::model::PracticeModel;
 use serde::{Deserialize, Serialize};
 use surrealdb::sql::Thing;
 
@@ -5,5 +6,7 @@ use surrealdb::sql::Thing;
 pub struct LectureModel {
     id: Option<Thing>,
     title: String,
-    //modules: Vec<ModuleModel>
+    description: String,
+    content: String,
+    modules: Vec<PracticeModel>,
 }
